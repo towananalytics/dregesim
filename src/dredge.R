@@ -1,16 +1,22 @@
 bucket_size <- 3 #m3
 boom_length <- 8 #m
 bucket_cut_depth <- 2 #m
-bucket_fill_efficiency <- 0.8
+bucket_fill_efficiency <- 0.8 #proportion
+bucket_emptying_time <- 3 #seconds
 hopper_height_above_water <- 2 #m
-slew_rate <- 1 # rpm
+slew_rate <- 2 # rpm
 slew_angle <- 90 # degrees
+
+dregde_vol <- 190000 # m3 material to be dredged
+
+total_buckets <- ceiling(dregde_vol / (bucket_size * bucket_fill_efficiency))
 
 slew_angle_dec_degrees <- slew_angle / 360
 
-time_to_slew <- slew_angle_dec_degrees * 60 # seconds
+time_to_slew <- (slew_angle_dec_degrees * 60) /  slew_rate # seconds
 
 bucket_speed <- 1 #m/s
+bucket_speed_cutting <- 2 #m/s cutting/dredging speed once at depth
 
 
 # Dredge start position ---------------------------------------------------
@@ -23,24 +29,47 @@ start_date_time <- as.POSIXct("2021-08-30 07:00:00")
 
 dredge_start_pos <- matrix(c(easting_start, northing_start))
 
+temp <- matrix(ncol = 2)
+
+for (i in total_buckets) {
+
 # Find row index for where dredge is located within seabed:
-loc_east <- which(abs(as.numeric(colnames(bed_grid))-dredge_start_pos[1])==min(abs(as.numeric(colnames(bed_grid))-dredge_start_pos[1])))
-loc_north <- which(abs(as.numeric(row.names(bed_grid))-dredge_start_pos[2])==min(abs(as.numeric(row.names(bed_grid))-dredge_start_pos[2])))
+loc_east <- which(abs(as.numeric(colnames(bed_grid))-dredge_start_pos[1]) == min(abs(as.numeric(colnames(bed_grid))-dredge_start_pos[1])))
+loc_north <- which(abs(as.numeric(row.names(bed_grid))-dredge_start_pos[2]) == min(abs(as.numeric(row.names(bed_grid))-dredge_start_pos[2])))
 
 
-bed_level_at_location <- bed_grid[loc_north, loc_east]
+bed_level_at_location <- bed_grid[loc_north, loc_east] # look up the surface level
 
-water_level_at_time <- as.numeric(water_level %>% filter(date_time == start_date_time) %>% select(y))
+water_level_at_time <- as.numeric(water_level %>% filter(date_time == start_date_time) %>% select(y)) # look up water level
     
-depth_of_water_at_location <- water_level_at_time - bed_level_at_location 
+depth_of_water_at_location <- water_level_at_time - bed_level_at_location
 
 time_to_seabed <- depth_of_water_at_location / bucket_speed # seconds
 
-time_to_cut <- bucket_cut_depth * bucket_speed # seconds
+time_to_cut <- bucket_cut_depth * bucket_speed_cutting # seconds to make the cut
 
-slew_time <- time_to_slew * 2
-
-time_to_lower_cut_raise <- time_to_seabed * 2 + time_to_cut + (2 * hopper_height_above_water * bucket_speed) + time_to_slew# seconds
+(cycle_time_cut <-(hopper_height_above_water * bucket_speed) + # assumes bucket is @ hopper height above dredge position
+                  time_to_seabed + # lower bucket to seabed
+                  time_to_cut + # cut/dredge
+                  time_to_seabed + # raise bucket to surface
+                  (hopper_height_above_water * bucket_speed) + # lift to height
+                  time_to_slew + # slew to hopper
+                  bucket_emptying_time + # seconds
+                  time_to_slew) # ready for next cut
 
 vol_cut <- bucket_size * bucket_fill_efficiency
+
+time_cut <- start_date_time + cycle_time_cut
+
+new_time <- time_cut + time_cut
+
+# temp <- as.data.frame(cbind(as.POSIXct(time_cut, origin = "1970-01-01"), vol_cut))
+
+df <- (cbind(time_cut, vol_cut))
+
+temp <- rbind(temp, df)
+
+sum(temp[, 2], na.rm = TRUE)
+
+}
 
