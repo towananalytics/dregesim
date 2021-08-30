@@ -1,5 +1,7 @@
 # split hopper
 hopper_capacity <- 250 # m3
+hopper_efficiency <- 0.8
+hopper_actual_capacity <- hopper_capacity * hopper_efficiency 
 sailing_distance <- 15 #km to disposal ground
 discharge_time <- 15 #seconds
 sail_spd_full <- 6 #knots
