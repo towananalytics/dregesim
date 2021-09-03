@@ -2,8 +2,8 @@
 easting_start <- 665816.1774
 northing_start <- 7753500.0084
 grid_res <- 10
-dist_x <- 20
-dist_y <- 20
+dist_x <- 100
+dist_y <- 100
 
 easting_end <- floor(easting_start) + dist_x
 northing_end <- floor(northing_start) + dist_y
