@@ -109,9 +109,11 @@ dredge_backhoe <- function(
     
     # START LOOP HERE - TIME DREDGING STARTS AT SURFACE
     
-    current_time <- 
+    current_time <- 0
     
-    water_level_at_time <- as.numeric(water_level %>% filter(date_time == start_date_time) %>% select(y)) # look up water level @ current time
+    average_cut_depth_at_grid_loc <- (bucket_size * bucket_fill_efficiency) / grid_resolution # i = bucket size
+    
+    water_level_at_time <- as.numeric(water_level %>% filter(date_time == current_time) %>% select(y)) # look up water level @ current time
         
     depth_of_water_at_location <- water_level_at_time - bed_level_at_location
     
