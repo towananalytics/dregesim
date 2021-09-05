@@ -109,9 +109,11 @@ dredge_backhoe <- function(
     
     # START LOOP HERE - TIME DREDGING STARTS AT SURFACE
     
-    current_time <- 
+    current_time <- 0
     
-    water_level_at_time <- as.numeric(water_level %>% filter(date_time == start_date_time) %>% select(y)) # look up water level @ current time
+    average_cut_depth_at_grid_loc <- (bucket_size * bucket_fill_efficiency) / grid_resolution # i = bucket size
+
+    water_level_at_time <- as.numeric(water_level %>% filter(date_time == current_time) %>% select(y)) # look up water level @ current time
         
     depth_of_water_at_location <- water_level_at_time - bed_level_at_location
     
@@ -194,3 +196,57 @@ dredge_backhoe <- function(
 # completion_time <- as.POSIXct(max(temp[, 1]), origin = "1970-01-01")
 # (duration <- as.POSIXct(max(temp[, 1]), origin = "1970-01-01") - start_date_time) # hours dredging time (multiply by 3600 to get seconds)
 
+#' Dredge Cycle Time
+#'
+#' @param water_depth_at_location 
+#' @param bucket_size 
+#' @param boom_length 
+#' @param bucket_cut_depth 
+#' @param bucket_fill_efficiency 
+#' @param bucket_emptying_time 
+#' @param hopper_height_above_water 
+#' @param slew_rate 
+#' @param slew_angle 
+#' @param bucket_speed 
+#' @param bucket_speed_cutting 
+#' @param material_bulk_factor 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+dredge_cycle_time <- function(water_depth_at_location = NULL, # Function of water level and seabed elevation
+                              bucket_size = 3, #m3
+                              boom_length = 8, #m
+                              bucket_cut_depth = 2, #m
+                              bucket_fill_efficiency = 0.8, #proportion
+                              bucket_emptying_time = 3, #seconds
+                              hopper_height_above_water = 2, #m
+                              slew_rate = 2, # rpm
+                              slew_angle = 90, # degrees between dredge and hopper
+                              bucket_speed = 1, #m/s
+                              bucket_speed_cutting = 2, #m/s cutting/dredging speed once at depth
+                              material_bulk_factor = 1.15 # used for volume estimates
+                              
+                              ){
+  
+  slew_angle_dec_degrees <- slew_angle / 360
+  
+  time_to_slew <- (slew_angle_dec_degrees * 60) /  slew_rate # seconds
+  
+  time_to_seabed <- water_depth_at_location / bucket_speed # seconds
+  
+  time_to_cut <- bucket_cut_depth * bucket_speed_cutting # seconds to make the cut
+  
+  (cycle_time_cut <-(hopper_height_above_water * bucket_speed) + # assumes bucket is @ hopper height above dredge position
+      time_to_seabed + # lower bucket to seabed
+      time_to_cut + # cut/dredge
+      time_to_seabed + # raise bucket to surface
+      (hopper_height_above_water * bucket_speed) + # lift to height
+      time_to_slew + # slew to hopper
+      bucket_emptying_time + # seconds
+      time_to_slew) # ready for next cut
+  
+  
+  
+}
