@@ -1,6 +1,8 @@
 
+
 #' Title
 #'
+#' @param bed_grid 
 #' @param bucket_size 
 #' @param boom_length 
 #' @param bucket_cut_depth 
@@ -15,15 +17,16 @@
 #' @param material_bulk_factor 
 #' @param northing_start 
 #' @param start_date_time 
-#' @param hopper_efficiency 
-#' @param hopper_actual_capacity 
-#' @param cycle_time_hopper 
 #'
 #' @return
 #' @export
 #'
 #' @examples
 dredge_backhoe <- function(
+                            bed_grid = NULL, # The existing seabed matrix
+                            dredge_surface = NULL,
+                            hopper_details = NULL,
+                            water_level = NULL,
                             bucket_size = 3, #m3
                             boom_length = 8, #m
                             bucket_cut_depth = 2, #m
@@ -43,26 +46,28 @@ dredge_backhoe <- function(
                             
                             # Time Constraints --------------------------------------------------------
                             
-                            time_constraint = c("07:00:00", "19:00:00"),
+                            time_constraint = c("0:00:00", "24:00:00"),
                             
                             # Dredge start position ---------------------------------------------------
                             
                             easting_start = 665818,
                             northing_start = 7753509,
                             
-                            start_date_time = as.POSIXct("2021-08-30 07:00:00"),
+                            start_date_time = as.POSIXct("2021-08-30 07:00:00")
                             
                             
                             # Hopper details ----------------------------------------------------------
                             
-                            hopper_capacity = 250, #m3
-                            hopper_efficiency = 0.8,
-                            hopper_actual_capacity = hopper_capacity * hopper_efficiency, 
-                            cycle_time_hopper = 9764.118 # seconds
+                            # hopper_capacity = 250, #m3
+                            # hopper_efficiency = 0.8,
+                            # hopper_actual_capacity = hopper_capacity * hopper_efficiency, 
+                            # cycle_time_hopper = 9764.118 # seconds
                             
                             ){
 
     # Calculations ------------------------------------------------------------
+  
+    hopper_cycle_time <- hopper_details[, "cycle.time"]
     
     total_buckets <- ceiling(dregde_vol / (bucket_size * bucket_fill_efficiency))
     
@@ -82,6 +87,8 @@ dredge_backhoe <- function(
     
     vol_cut_cum <- 0 # Cumulative volume dredged
     
+    for(x in seq_along(hopper_details[, 1])){
+    
     for (i in 1:total_buckets) {
       
     
@@ -91,8 +98,20 @@ dredge_backhoe <- function(
     
     
     bed_level_at_location <- bed_grid[loc_north, loc_east] # look up the surface level
+    dredge_depth_at_location <- dredge_surface[loc_north, loc_east] # look up the required dredge level
     
-    water_level_at_time <- as.numeric(water_level %>% filter(date_time == start_date_time) %>% select(y)) # look up water level
+    grid_resolution <- as.numeric(colnames(bed_grid)[2]) - as.numeric(colnames(bed_grid)[1])
+    
+    dredge_vol_at_location <- ((bed_level_at_location - dredge_depth_at_location)) * grid_resolution #m3 total volume at location (grid cell)
+    
+    total_buckets_at_grid_loc <- ceiling(dredge_vol_at_location / (bucket_size * bucket_fill_efficiency))
+    
+    
+    # START LOOP HERE - TIME DREDGING STARTS AT SURFACE
+    
+    current_time <- 
+    
+    water_level_at_time <- as.numeric(water_level %>% filter(date_time == start_date_time) %>% select(y)) # look up water level @ current time
         
     depth_of_water_at_location <- water_level_at_time - bed_level_at_location
     
@@ -162,16 +181,16 @@ dredge_backhoe <- function(
     return(temp)
     
     }
+}
 
-
-dredge_vols <- as.data.frame(temp)
-
-names(dredge_vols) <- c("time", "cut.vol", "cum.hopper.vol", "hopper.number")
-
-dredge_vols$time <- as.POSIXct(dredge_vols$time, origin = "1970-01-01")
-
-sum(temp[, 2], na.rm = TRUE)
-
-completion_time <- as.POSIXct(max(temp[, 1]), origin = "1970-01-01")
-(duration <- as.POSIXct(max(temp[, 1]), origin = "1970-01-01") - start_date_time) # hours dredging time (multiply by 3600 to get seconds)
+# dredge_vols <- as.data.frame(temp)
+# 
+# names(dredge_vols) <- c("time", "cut.vol", "cum.hopper.vol", "hopper.number")
+# 
+# dredge_vols$time <- as.POSIXct(dredge_vols$time, origin = "1970-01-01")
+# 
+# sum(temp[, 2], na.rm = TRUE)
+# 
+# completion_time <- as.POSIXct(max(temp[, 1]), origin = "1970-01-01")
+# (duration <- as.POSIXct(max(temp[, 1]), origin = "1970-01-01") - start_date_time) # hours dredging time (multiply by 3600 to get seconds)
 

@@ -1,6 +1,5 @@
 
-
-simulate_seabed <- function(){
+simulate_dredge_surface <- function(){
   
   easting_start <- 665816.1774
   northing_start <- 7753500.0084
@@ -11,7 +10,7 @@ simulate_seabed <- function(){
   easting_end <- floor(easting_start) + dist_x
   northing_end <- floor(northing_start) + dist_y
   
-  bed_grid <- matrix(rnorm((dist_y / grid_res + 1) * (dist_x / grid_res + 1)) + 10,
+  dredge_surface <- matrix(rnorm((dist_y / grid_res + 1) * (dist_x / grid_res + 1)) - 1,
                      nrow = dist_y / grid_res + 1, 
                      ncol = dist_x / grid_res + 1,
                      dimnames = list(
@@ -24,8 +23,6 @@ simulate_seabed <- function(){
                      )
   )
   
-  return(bed_grid)
+  return(dredge_surface)
   
 }
-
-
