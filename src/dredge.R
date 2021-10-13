@@ -215,7 +215,8 @@ dredge_backhoe <- function(
 #' @export
 #'
 #' @examples
-dredge_cycle_time <- function(water_depth_at_location = NULL, # Function of water level and seabed elevation
+dredge_cycle_time <- function(
+                              water_depth_at_location = NULL, # Function of water level and seabed elevation
                               bucket_size = 3, #m3
                               boom_length = 8, #m
                               bucket_cut_depth = 2, #m
@@ -227,7 +228,6 @@ dredge_cycle_time <- function(water_depth_at_location = NULL, # Function of wate
                               bucket_speed = 1, #m/s
                               bucket_speed_cutting = 2, #m/s cutting/dredging speed once at depth
                               material_bulk_factor = 1.15 # used for volume estimates
-                              
                               ){
   
   slew_angle_dec_degrees <- slew_angle / 360

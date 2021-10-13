@@ -95,7 +95,11 @@
     #   
     # }
       
-      return(hopper_details[, c("hopper.ID", "actual.capacity", "cycle.time")])
+      return(hopper_details[, c("hopper.ID", 
+                                "hopper.capacity", 
+                                "capacity.efficiency", 
+                                "actual.capacity", 
+                                "cycle.time")])
       
       }
 
