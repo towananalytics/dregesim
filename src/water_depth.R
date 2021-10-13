@@ -1,4 +1,6 @@
-#' Title
+#' water_depth
+#' 
+#' Estimate depth of water using water level inputs and seabed depth
 #'
 #' @param water_levels 
 #' @param current_time 
@@ -10,11 +12,11 @@
 #' @examples
 #' 
 water_depth <- function(
-  loc_north = NULL,
-  loc_east = NULL,
-  water_levels = NULL,
-  current_time = NULL,
-  bed_grid = NULL # The existing seabed matrix
+                        loc_north = NULL,
+                        loc_east = NULL,
+                        water_levels = NULL,
+                        current_time = NULL,
+                        bed_grid = NULL # The existing seabed matrix
   ){
   
   water_level_at_time <- mean(water_levels[which(abs(water_levels$date_time - current_time) == min(abs(water_levels$date_time - current_time))), "y"])
